@@ -1,0 +1,78 @@
+﻿<Window
+  x:Class="Demo.Wpf.MainWindow"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:local="clr-namespace:Demo.Wpf"
+  Title="UwpAppsEnumeration"
+  Width="500"
+  Height="450">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+
+    <Button Click="Button_Click" Content="取得" />
+
+    <ListBox Grid.Row="1" ItemsSource="{Binding Apps}">
+      <ListBox.ItemContainerStyle>
+        <Style TargetType="{x:Type ListBoxItem}">
+          <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+      </ListBox.ItemContainerStyle>
+      <ListBox.ItemTemplate>
+        <DataTemplate DataType="{x:Type local:UwpAppWrapper}">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <!--  Rectangle Rectangle Imageを3つ重ねている  -->
+            <!--  テーマ色  -->
+            <Rectangle
+              Width="32"
+              Height="32"
+              Fill="{x:Static SystemParameters.WindowGlassBrush}" />
+            <!--  アプリ指定背景（透明が多め）  -->
+            <Rectangle
+              Width="32"
+              Height="32"
+              Fill="{Binding Entry.DisplayInfo.BackgroundColor}" />
+            <!--  アプリアイコン  -->
+            <Image
+              Width="24"
+              Height="24"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Source="{Binding Entry.DisplayInfo.Logo}" />
+
+            <TextBlock
+              Grid.Column="1"
+              Margin="5"
+              VerticalAlignment="Center"
+              Text="{Binding Entry.DisplayInfo.DisplayName}" />
+
+            <Button
+              Grid.Column="2"
+              Padding="5,0"
+              VerticalAlignment="Center"
+              Click="Button_Click_1"
+              Content="起動">
+              <Button.Style>
+                <Style TargetType="{x:Type Button}">
+                  <Setter Property="Visibility" Value="Hidden" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=IsMouseOver}" Value="True">
+                      <Setter Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Button.Style>
+            </Button>
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </Grid>
+</Window>
