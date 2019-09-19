@@ -41,7 +41,7 @@ namespace Demo.Wpf
                 button.IsEnabled = true;
             }
 
-            static ImageSource toImageSource(Stream stream)
+            static ImageSource toImageSource(Stream stream,string backgroundColor)
             {
                 var imageSource = new BitmapImage();
                 imageSource.BeginInit();

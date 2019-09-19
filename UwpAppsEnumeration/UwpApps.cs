@@ -12,7 +12,7 @@ namespace UwpAppsEnumeration
         /// <typeparam name="T">ロゴ画像の型</typeparam>
         /// <param name="stream2Logo">ストリームから画像を生成するデリゲート</param>
         /// <returns>アプリ情報</returns>
-        public static async IAsyncEnumerable<AppListEntryEx<T>> EnumerateAsync<T>(Func<Stream, T> stream2Logo) where T : class
+        public static async IAsyncEnumerable<AppListEntryEx<T>> EnumerateAsync<T>(Func<Stream, string, T> stream2Logo) where T : class
         {
             // AppListEntryが複数あった場合 同一PackageがAppListEntry分列挙される模様
             // カレンダーとメール等

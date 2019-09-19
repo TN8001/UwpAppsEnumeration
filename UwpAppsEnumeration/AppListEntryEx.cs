@@ -23,7 +23,7 @@ namespace UwpAppsEnumeration
         private string debuggerDisplay => $"{DisplayInfo.DisplayName}, {Package.Id.Name}";
 
 
-        internal static async Task<AppListEntryEx<T>> CreateInstanceAsync(PackageEx package, AppListEntry appListEntry, Func<Stream, T> stream2Logo)
+        internal static async Task<AppListEntryEx<T>> CreateInstanceAsync(PackageEx package, AppListEntry appListEntry, Func<Stream, string, T> stream2Logo)
         {
             var entry = new AppListEntryEx<T>(package, appListEntry);
             await entry.InitializeAsync(stream2Logo);
@@ -37,13 +37,14 @@ namespace UwpAppsEnumeration
             this.appListEntry = appListEntry;
         }
 
-        private async Task InitializeAsync(Func<Stream, T> stream2Logo)
+        private async Task InitializeAsync(Func<Stream, string, T> stream2Logo)
         {
             var appId = appListEntry.AppUserModelId.Substring(appListEntry.AppUserModelId.IndexOf("!") + 1);
             var (backgroundColor, square44x44Logo) = GetVisualElements(Package, appId);
             if(square44x44Logo == null) throw new Exception("Square44x44Logoがありません。");
+            if(backgroundColor == null) backgroundColor = "transparent";
 
-            var logo = await GetLogoAsync(stream2Logo, square44x44Logo);
+            var logo = await GetLogoAsync(stream2Logo, backgroundColor, square44x44Logo);
             DisplayInfo = new AppDisplayInfoEx<T>(appListEntry.DisplayInfo)
             {
                 Logo = logo,
@@ -73,34 +74,34 @@ namespace UwpAppsEnumeration
             return (null, null);
         }
 
-        private async Task<T> GetLogoAsync(Func<Stream, T> stream2Logo, string square44x44Logo)
+        private async Task<T> GetLogoAsync(Func<Stream, string, T> stream2Logo, string backgroundColor, string square44x44Logo)
         {
             var path = Path.Combine(Package.InstalledLocation, square44x44Logo);
             if(File.Exists(path)) // Square44x44Logoがあればそのまま使う
             {
                 using var stream = File.OpenRead(path);
-                return stream2Logo(stream);
+                return stream2Logo(stream, backgroundColor);
             }
 
             var dir = Path.GetDirectoryName(path);
             var name = Path.GetFileNameWithoutExtension(path);
             var ext = Path.GetExtension(path);
             var files = Directory.GetFiles(dir, $"{name}*{ext}", SearchOption.AllDirectories)
-                              .Select(x => x.ToLower())
-                              .Where(x => !x.Contains("contrast-white"));
+                                 .Select(x => x.ToLower())
+                                 .Where(x => !x.Contains("contrast-white"));
 
             path = files.FirstOrDefault(x => x.Contains("scale-100") || x.Contains("scale-200"));
             if(path != null) // scaleで探す
             {
                 using var stream = File.OpenRead(path);
-                return stream2Logo(stream);
+                return stream2Logo(stream, backgroundColor);
             }
 
             path = files.FirstOrDefault(x => x.Contains("targetsize-44") || x.Contains("targetsize-32"));
             if(path != null) // targetsizeで探す
             {
                 using var stream = File.OpenRead(path);
-                return stream2Logo(stream);
+                return stream2Logo(stream, backgroundColor);
             }
 
             // ここま見つからなければあきらめて任すが Sizeが効いてる気がしない
@@ -109,7 +110,7 @@ namespace UwpAppsEnumeration
             using(var randomAccessStream = await streamRef.OpenReadAsync())
             using(var stream = randomAccessStream.AsStream())
             {
-                return stream2Logo(stream);
+                return stream2Logo(stream, backgroundColor);
             }
         }
 
